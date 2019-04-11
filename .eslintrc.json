@@ -1,0 +1,10 @@
+{
+  "env": {
+    "jest/globals": true
+  },
+  "extends": "airbnb-base",
+  "plugins": ["jest"],
+  "rules" :{
+    "no-console": "off"
+  }
+}
