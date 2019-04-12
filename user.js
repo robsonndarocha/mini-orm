@@ -1,73 +1,91 @@
-const sqlite3 = require('sqlite3');
+
+const sqlite3 = require('sqlite3').verbose();
+
 const db = new sqlite3.Database('mini-orm.db');
 
 class User {
-
-  constructor(first_name, last_name, email) {
-    this.first_name = first_name;
-    this.last_name = last_name;
+  constructor(firstName, lastName, email) {
+    this.firstName = firstName;
+    this.lastName = lastName;
     this.email = email;
   }
 
   static createTable() {
-    const query =
-    `CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY,
-      first_name TEXT NOT NULL,
-      last_name TEXT NOT NULL,
-      email TEXT NOT NULL
-    )`;
+    const query = 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, firstName TEXT NOT NULL, lastName TEXT NOT NULL, email TEXT NOT NULL)';
 
-    return new Promise(function(resolve) {
-      db.run(query, function() {
+    console.log('Creating table "users"...');
+
+    return new Promise((resolve, reject) => {
+      db.run(query, (err) => {
+        if (err) {
+          reject(err);
+        }
         console.log('Users table successfully created!');
         resolve('Success!');
       });
+      db.close();
     });
   }
 
   create() {
     const self = this;
-    const query = `INSERT INTO users (first_name, last_name, email) VALUES (?, ?, ?)`;
-    console.log(`Creating user ${self.first_name}...`);
+    const query = 'INSERT INTO users (firstName, lastName, email) VALUES (?, ?, ?)';
 
-    return new Promise(function(resolve) {
-      db.run(query, [self.first_name, self.last_name, self.email], function() {
-        console.log(`User ${self.first_name} created in the database.`);
+    console.log(`Creating user ${self.firstName}...`);
+
+    return new Promise((resolve, reject) => {
+      db.run(query, [self.firstName, self.lastName, self.email], (err) => {
+        if (err) {
+          reject(err);
+        }
+        console.log(`User ${self.firstName} created in the database.`);
         self.id = self.lastID;
         resolve(self);
       });
+      db.close();
     });
   }
 
   static find(id) {
     const query = 'SELECT * FROM users WHERE id = ? LIMIT 1';
 
-    return new Promise(function(resolve) {
-      db.get(query, [id], function(err, resultRow) {
-        console.log(`One match found: ${JSON.stringify(resultRow)}.`);
-        const user = new User(resultRow.first_name, resultRow.last_name, resultRow.email);
-        user.id = resultRow.id;
+    console.log('Finding user...');
+
+    return new Promise(((resolve, reject) => {
+      db.get(query, [id], (err, row) => {
+        if (err) {
+          reject(err);
+        }
+        console.log('One match found:');
+        console.log(`${JSON.stringify(row, null, '\t')}`);
+        const user = new User(row.firstName, row.lastName, row.email);
+        user.id = row.id;
         resolve(user);
       });
-    });
+      db.close();
+    }));
   }
 
-  static findAll(first_name) {
-    const query = `SELECT * FROM users WHERE name = ?`;
+  static findAll(firstName) {
+    const query = 'SELECT * FROM users WHERE firstName = ?';
 
-    return new Promise(function(resolve) {
-      db.all(query, [first_name], function(err, results) {
-        console.log(`${results.length} users found!`);
-        const users = results.map(function(userRow) {
-          const user = new User(userRow.first_name, userRow.last_name, userRow.email);
-          user.id = userRow.id;
+    console.log('Finding all users...');
+
+    return new Promise((resolve, reject) => {
+      db.all(query, [firstName], (err, rows) => {
+        if (err) {
+          reject(err);
+        }
+        console.log(`${rows.length} users found!`);
+        const users = rows.map((row) => {
+          const user = new User(row.firstName, row.lastName, row.email);
+          user.id = row.id;
           return user;
         });
+        resolve(users);
       });
     });
   }
-
 }
 
 module.exports = User;
