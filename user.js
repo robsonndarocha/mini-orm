@@ -86,13 +86,17 @@ class User {
         console.log(`${rows.length} users found!`);
         const users = rows.map((row) => {
           const user = new User(row.firstName, row.lastName, row.email);
-          user.id = row.id;
+          user.id = row.lastID;
           return user;
         });
         resolve(users);
       });
     });
   }
+
+/**
+ * TODO - getAttribute() and setAttribute()
+ */
 }
 
 export default User;

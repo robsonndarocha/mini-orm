@@ -13,13 +13,12 @@ const User = require('./user.js');
 //   });
 // }
 
-// async function findUser() {
-//   await User.find(1);
-// }
+async function findUser() {
+  await User.find(1);
+}
 
 // async function findAll() {
 //   await User.findAll({ first_name: 'Robson' });
 // }
 
-
-User.find(1);
+findUser();
