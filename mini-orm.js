@@ -6,16 +6,20 @@ const User = require('./user.js');
 // }
 
 // async function createUser() {
-//   const robson = new User('Robson', 'da Rocha', 'robsonndarocha@gmail.com');
-//   await robson.create();
+//   await User.create({
+//     first_name: 'Robson',
+//     last_name: 'da Rocha',
+//     email: 'robsonndarocha@gmail.com',
+//   });
 // }
 
 // async function findUser() {
 //   await User.find(1);
 // }
 
-async function findAll(firstName) {
-  await User.findAll(firstName);
-}
+// async function findAll() {
+//   await User.findAll({ first_name: 'Robson' });
+// }
 
-findAll('Robson');
+
+User.find(1);

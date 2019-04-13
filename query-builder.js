@@ -1,9 +1,11 @@
 class QueryBuilder {
-  static function encode(data) {
-    return Object.keys(data).map(key => {
-      return [key, data[key]].map(encodeURIComponent).join('=');
-    }).join(' AND ');
+  static encode(params) {
+    return Object.keys(params).map(key => [key, params[key]].join('=')).join(' AND ');
+  }
+
+  static bind(params) {
+    return Object.keys(params).map(key => params[key]);
   }
 }
 
-module.exports = QueryBuilder;
+export default QueryBuilder;

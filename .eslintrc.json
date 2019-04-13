@@ -5,6 +5,7 @@
   "extends": "airbnb-base",
   "plugins": ["jest"],
   "rules" :{
-    "no-console": "off"
+    "no-console": "off",
+    "linebreak-style": 0
   }
 }

@@ -3,6 +3,8 @@ const sqlite3 = require('sqlite3').verbose();
 
 const db = new sqlite3.Database('mini-orm.db');
 
+const queryBuilder = require('./query-builder.js');
+
 class User {
   constructor(firstName, lastName, email) {
     this.firstName = firstName;
@@ -27,20 +29,23 @@ class User {
     });
   }
 
-  create() {
-    const self = this;
+  static create(data) {
+    const params = queryBuilder.bind(data);
+
     const query = 'INSERT INTO users (firstName, lastName, email) VALUES (?, ?, ?)';
 
-    console.log(`Creating user ${self.firstName}...`);
+    const user = new User(params[1], params[2], params[3]);
+
+    console.log(`Creating user ${user.firstName}...`);
 
     return new Promise((resolve, reject) => {
-      db.run(query, [self.firstName, self.lastName, self.email], (err) => {
+      db.run(query, params, (err) => {
         if (err) {
           reject(err);
         }
-        console.log(`User ${self.firstName} created in the database.`);
-        self.id = self.lastID;
-        resolve(self);
+        console.log(`User ${user.firstName}} created in the database.`);
+        user.id = this.lastID;
+        resolve(user);
       });
       db.close();
     });
@@ -66,13 +71,15 @@ class User {
     }));
   }
 
-  static findAll(firstName) {
-    const query = 'SELECT * FROM users WHERE firstName = ?';
+  static findAll(data) {
+    const params = queryBuilder.encode(data);
+
+    const query = 'SELECT * FROM users WHERE ?';
 
     console.log('Finding all users...');
 
     return new Promise((resolve, reject) => {
-      db.all(query, [firstName], (err, rows) => {
+      db.all(query, params, (err, rows) => {
         if (err) {
           reject(err);
         }
@@ -88,4 +95,4 @@ class User {
   }
 }
 
-module.exports = User;
+export default User;
