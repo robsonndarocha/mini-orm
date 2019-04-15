@@ -1,24 +1,14 @@
 
-const User = require('./user.js');
+const User = require('./user');
 
-// function createTable('users') {
-//   User.createTable();
-// }
+// User.createTable();
 
-// function createUser() {
-//   User.create({
-//     first_name: 'Robson',
-//     last_name: 'da Rocha',
-//     email: 'robsonndarocha@gmail.com',
-//   });
-// }
+// User.create({
+//   first_name: 'Robson',
+//   last_name: 'da Rocha',
+//   email: 'robsonndarocha@gmail.com',
+// });
 
-function findUser() {
-  User.find(1);
-}
+// User.find({ id: 1 });
 
-// function findAll() {
-//   User.findAll({ first_name: 'Robson' });
-// }
-
-findUser();
+User.findAll({ first_name: 'Robson' });

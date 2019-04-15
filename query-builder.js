@@ -1,11 +1,11 @@
 class QueryBuilder {
-  static encode(params) {
-    return Object.keys(params).map(key => [key, params[key]].join('=')).join(' AND ');
+  static makeWhereClausesParams(args) {
+    return Object.keys(args).map(key => [key, args[key]].join('=')).join(' AND ');
   }
 
-  static bind(params) {
-    return Object.keys(params).map(key => params[key]);
+  static getParamsFromArgs(args) {
+    return Object.keys(args).map(key => args[key]);
   }
 }
 
-export default QueryBuilder;
+module.exports = QueryBuilder;

@@ -3,91 +3,84 @@ const sqlite3 = require('sqlite3').verbose();
 
 const db = new sqlite3.Database('mini-orm.db');
 
-const queryBuilder = require('./query-builder.js');
+const queryBuilder = require('./query-builder');
 
 class User {
-  constructor(firstName, lastName, email) {
+  constructor(id, firstName, lastName, email) {
+    this.id = id;
     this.firstName = firstName;
     this.lastName = lastName;
     this.email = email;
   }
 
   static createTable() {
-    const query = 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, firstName TEXT NOT NULL, lastName TEXT NOT NULL, email TEXT NOT NULL)';
+    const sql = 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, firstName TEXT NOT NULL, lastName TEXT NOT NULL, email TEXT NOT NULL)';
 
     console.log('Creating table "users"...');
 
     return new Promise((resolve, reject) => {
-      db.run(query, (err) => {
+      db.run(sql, (err) => {
         if (err) {
           reject(err);
         }
         console.log('Users table successfully created!');
         resolve('Success!');
       });
-      db.close();
     });
   }
 
-  static create(data) {
-    const params = queryBuilder.bind(data);
+  static create(args) {
+    const params = queryBuilder.getParamsFromArgs(args);
 
-    const query = 'INSERT INTO users (firstName, lastName, email) VALUES (?, ?, ?)';
+    const sql = 'INSERT INTO users (firstName, lastName, email) VALUES (?, ?, ?)';
 
-    const user = new User(params[1], params[2], params[3]);
-
-    console.log(`Creating user ${user.firstName}...`);
+    console.log(`Creating user ${params[0]}...`);
 
     return new Promise((resolve, reject) => {
-      db.run(query, params, (err) => {
+      db.run(sql, params, (err) => {
         if (err) {
           reject(err);
         }
-        console.log(`User ${user.firstName}} created in the database.`);
-        user.id = this.lastID;
-        resolve(user);
+        console.log(`User ${params[0]} created in the database.`);
+        resolve(new User(this.lastID, params[0], params[1], params[2]));
       });
-      db.close();
     });
   }
 
-  static find(id) {
-    const query = 'SELECT * FROM users WHERE id = ? LIMIT 1';
+  static find(args) {
+    const id = queryBuilder.getParamsFromArgs(args);
+
+    const sql = 'SELECT * FROM users WHERE id = ? LIMIT 1';
 
     console.log('Finding user...');
 
     return new Promise(((resolve, reject) => {
-      db.get(query, [id], (err, row) => {
+      db.get(sql, id, (err, row) => {
         if (err) {
           reject(err);
         }
         console.log('One match found:');
         console.log(`${JSON.stringify(row, null, '\t')}`);
-        const user = new User(row.firstName, row.lastName, row.email);
-        user.id = row.id;
-        resolve(user);
+        resolve(new User(row.lastID, row.firstName, row.lastName, row.email));
       });
-      db.close();
     }));
   }
 
   static findAll(data) {
-    const params = queryBuilder.encode(data);
+    const params = queryBuilder.getParamsFromArgs(data);
 
-    const query = 'SELECT * FROM users WHERE ?';
+    const sql = 'SELECT * FROM users WHERE firstName = ?';
 
-    console.log('Finding all users...');
+    console.log('Finding all users matching the constraint...');
 
     return new Promise((resolve, reject) => {
-      db.all(query, params, (err, rows) => {
+      db.all(sql, params, (err, rows) => {
         if (err) {
           reject(err);
         }
-        console.log(`${rows.length} users found!`);
         const users = rows.map((row) => {
-          const user = new User(row.firstName, row.lastName, row.email);
-          user.id = row.lastID;
-          return user;
+          console.log(`${JSON.stringify(row, null, '\t')}`);
+          return new User(row.lastID, row.firstName, row.lastName, row.email);
         });
         resolve(users);
       });
@@ -99,4 +92,4 @@ class User {
  */
 }
 
-export default User;
+module.exports = User;
