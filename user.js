@@ -14,7 +14,7 @@ class User {
   }
 
   static createTable() {
-    const sql = 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, firstName TEXT NOT NULL, lastName TEXT NOT NULL, email TEXT NOT NULL)';
+    const sql = 'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, first_name TEXT NOT NULL, last_name TEXT NOT NULL, email TEXT NOT NULL)';
 
     console.log('Creating table "users"...');
 
@@ -32,7 +32,7 @@ class User {
   static create(args) {
     const params = queryBuilder.getParamsFromArgs(args);
 
-    const sql = 'INSERT INTO users (firstName, lastName, email) VALUES (?, ?, ?)';
+    const sql = 'INSERT INTO users (first_name, last_name, email) VALUES (?, ?, ?)';
 
     console.log(`Creating user ${params[0]}...`);
 
@@ -47,49 +47,69 @@ class User {
     });
   }
 
-  static find(args) {
-    const id = queryBuilder.getParamsFromArgs(args);
+  static find(arg) {
+    const param = queryBuilder.getClauseParamsFromArgs(arg);
 
-    const sql = 'SELECT * FROM users WHERE id = ? LIMIT 1';
+    const sql = `SELECT * FROM users WHERE ${param} LIMIT 1`;
 
     console.log('Finding user...');
 
     return new Promise(((resolve, reject) => {
-      db.get(sql, id, (err, row) => {
+      db.get(sql, (err, row) => {
         if (err) {
           reject(err);
         }
-        console.log('One match found:');
-        console.log(`${JSON.stringify(row, null, '\t')}`);
-        resolve(new User(row.lastID, row.firstName, row.lastName, row.email));
+        resolve(row);
       });
     }));
   }
 
-  static findAll(data) {
-    const params = queryBuilder.getParamsFromArgs(data);
+  static findAll(args) {
+    const params = queryBuilder.getClauseParamsFromArgs(args);
 
-    const sql = 'SELECT * FROM users WHERE firstName = ?';
+    const sql = `SELECT * FROM users WHERE ${params}`;
 
     console.log('Finding all users matching the constraint...');
 
     return new Promise((resolve, reject) => {
-      db.all(sql, params, (err, rows) => {
+      db.all(sql, (err, rows) => {
         if (err) {
           reject(err);
         }
-        const users = rows.map((row) => {
-          console.log(`${JSON.stringify(row, null, '\t')}`);
-          return new User(row.lastID, row.firstName, row.lastName, row.email);
-        });
-        resolve(users);
+        resolve(rows);
       });
     });
   }
 
-/**
- * TODO - getAttribute() and setAttribute()
- */
+  getAttribute(arg) {
+    const sql = `SELECT ${arg} FROM users WHERE id = ${this.id}`;
+
+    return new Promise(((resolve, reject) => {
+      db.get(sql, (err, row) => {
+        if (err) {
+          reject(err);
+        }
+        console.log(row);
+        resolve(row);
+      });
+    }));
+  }
+
+  setAttribute(arg) {
+    const param = queryBuilder.getClauseParamsFromArgs(arg);
+
+    const sql = `UPDATE users SET ${param} WHERE id = ${this.id}`;
+
+    return new Promise((resolve, reject) => {
+      db.run(sql, (err, row) => {
+        if (err) {
+          reject(err);
+        }
+        console.log('User successfully updated!');
+        resolve(row);
+      });
+    });
+  }
 }
 
 module.exports = User;
